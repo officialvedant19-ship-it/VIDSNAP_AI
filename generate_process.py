@@ -2,6 +2,7 @@
 import os
 from text_to_speech import text_to_speech_file
 import time
+import subprocess
 
 def text_to_audio(folder):
     with open(f"user_upload/{folder}/desc.txt", "r") as f:
@@ -10,8 +11,9 @@ def text_to_audio(folder):
     text_to_speech_file(text , folder)
 
 def create_reels(folder):
-    print("CR - ", folder)
-
+    # command = f'''ffmpeg -f concat -safe 0 -i user_upload/{folder}/input.txt -i user_upload/{folder}/audio.mp3 -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2" -c:v libx264 -c:a aac -shortest -r 30 -pix_fmt yuv420p static/reels/{folder}.mp4'''
+    command = f'''ffmpeg -f concat -safe 0 -i user_upload/{folder}/input.txt -i user_upload/{folder}/audio.mp3 -map 0:v:0 -map 1:a:0 -vf "scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2" -c:v libx264 -c:a aac -ar 44100 -shortest -r 30 -pix_fmt yuv420p -y static/reels/{folder}.mp4'''
+    subprocess.run(command,shell=True,check=True)
 
     
 if __name__ == "__main__" :

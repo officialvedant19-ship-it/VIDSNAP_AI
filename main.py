@@ -22,6 +22,7 @@ def create():
         print(request.files.keys())
         rec_id = request.form.get("uuid")
         desc = request.form.get("text")
+        input_files = []
         for key, value in request.files.items():
             print(key, value)
             # Upload the file
@@ -32,15 +33,22 @@ def create():
                 if(not(os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], rec_id)))):
                     os.mkdir(os.path.join(app.config['UPLOAD_FOLDER'], rec_id))
                 file.save(os.path.join(app.config['UPLOAD_FOLDER'], rec_id,  filename))
+                input_files.append(file.filename)
             # Capture the description and save it to a file
             with open(os.path.join(app.config['UPLOAD_FOLDER'], rec_id, "desc.txt"), "w") as f:
                 f.write(desc)
-
+        for fl in input_files:
+            with open(os.path.join(app.config['UPLOAD_FOLDER'], rec_id, "input.txt"), "a") as f:
+                f.write(f"file '{fl}'\nduration 1\n")    
+            
         return redirect(url_for('create'))
     fresh_id = str(uuid.uuid1())
     return render_template("create.html", my_uuid = fresh_id)
 @app.route("/gallery")
 def gallery():
-    return render_template("gallery.html")
+    reels = os.listdir("static/reels")
+    print(reels)
+    return render_template("gallery.html", reels = reels)
+
 
 app.run(debug=True)
