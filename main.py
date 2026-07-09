@@ -3,6 +3,7 @@ import uuid
 from werkzeug.utils import secure_filename
 import os
 
+from generate_process import text_to_audio, create_reels
 
 UPLOAD_FOLDER = 'user_upload'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
@@ -39,9 +40,12 @@ def create():
                 
         with open(os.path.join(save_folder, "input.txt"), "w") as f:
             for fl in input_files:
-                f.write(f"file '{fl}'\nduration 1\n")    
+                f.write(f"file '{fl}'\nduration 1\n")   
+        #from generate_process.py
+        text_to_audio(rec_id)
+        create_reels(rec_id) 
             
-        return redirect(url_for('create'))
+        return redirect(url_for('gallery'))
         
     fresh_id = str(uuid.uuid1())
     return render_template("create.html", my_uuid=fresh_id)
