@@ -19,33 +19,33 @@ def home():
 
 @app.route("/create", methods=["GET", "POST"])
 def create():
-    myid = uuid.uuid1()
     if request.method == "POST":
-        print(request.files.keys())
-        rec_id = request.form.get("uuid")
-        desc = request.form.get("text")
+        rec_id = str(request.form.get("uuid"))
+        desc = str(request.form.get("text"))
+        
+        save_folder = os.path.join(app.config['UPLOAD_FOLDER'], rec_id)
+        os.makedirs(save_folder, exist_ok=True)
+
+        with open(os.path.join(save_folder, "desc.txt"), "w") as f:
+            f.write(desc)
+
         input_files = []
         for key, value in request.files.items():
-            print(key, value)
-            # Upload the file
             file = request.files[key]
-            if file:
+            if file and file.filename != '':
                 filename = secure_filename(file.filename)
-                save_folder = os.path.join(app.config['UPLOAD_FOLDER'], str(rec_id))
-                if(not(os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], rec_id)))):
-                    os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], rec_id), exist_ok=True)
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], rec_id,  filename))
-                input_files.append(file.filename)
-            # Capture the description and save it to a file
-            with open(os.path.join(app.config['UPLOAD_FOLDER'], rec_id, "desc.txt"), "w") as f:
-                f.write(desc)
-        for fl in input_files:
-            with open(os.path.join(app.config['UPLOAD_FOLDER'], rec_id, "input.txt"), "a") as f:
+                file.save(os.path.join(save_folder, filename))
+                input_files.append(filename)
+                
+        with open(os.path.join(save_folder, "input.txt"), "w") as f:
+            for fl in input_files:
                 f.write(f"file '{fl}'\nduration 1\n")    
             
         return redirect(url_for('create'))
+        
     fresh_id = str(uuid.uuid1())
-    return render_template("create.html", my_uuid = fresh_id)
+    return render_template("create.html", my_uuid=fresh_id)
+
 @app.route("/gallery")
 def gallery():
     reels = os.listdir("static/reels")
